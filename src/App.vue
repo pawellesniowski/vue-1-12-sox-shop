@@ -1,19 +1,30 @@
 <template>
   <div id="app">
-    <ProductPage/>
+    <CartMiniature :cartItemsNumber="cartItemsNumber"/>
+    <ProductPage :handleItemsToCart="handleItemsToCart"/>
+    <AppFooter/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import ProductPage from './views/ProductPage.vue';
+import AppFooter from './components/AppFooter.vue';
+import CartMiniature from './components/CartMiniature.vue';
 
 @Component({
   components: {
     ProductPage,
+    AppFooter,
+    CartMiniature,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  cartItemsNumber: number = 0;
+  handleItemsToCart () {
+    this.cartItemsNumber++;
+  }
+}
 </script>
 
 <style>
