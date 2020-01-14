@@ -7,7 +7,7 @@
     <div class="product-page__rightcol">
       <h1>{{title}}</h1>
       <span>Shipping: 24 hours</span>
-      <span :style="[activeVariant.inventory <= 0 ? {color: 'red'} : {color: 'green'}]">
+      <span :style="[isInStock ? {color: 'green'} : {color: 'red'}]">
         Stock: {{activeVariant.inventory}}
       </span>
       <h2>Details</h2>
@@ -25,7 +25,7 @@
       </div>
       <button
         v-on:click="handleAddToCart"
-        :disabled="activeVariant.inventory <=0"
+        :disabled="!isInStock"
       >Add to Cart
       </button>
     </div>
@@ -56,10 +56,8 @@ Component.registerHooks([
 export default class ProductPage extends Vue {
   @Prop() handleItemsToCart!: () => void;
 
-
   brand: string = "Vue Mastery";
   product: string = "Sox";
-  inventory: number = 5;
   activeVariant: ProductVariant | null = null;
   productVariants: ProductVariant[] = [
     {
@@ -95,12 +93,21 @@ export default class ProductPage extends Vue {
   }
 
   handleAddToCart() {
-    this.activeVariant!.inventory--;
-    this.handleItemsToCart();
+    if(this.activeVariant!.inventory > 0) {
+      this.activeVariant!.inventory--;
+      this.handleItemsToCart();
+    }
   }
 
-  get title() {
+  get title(): string {
     return this.brand + " " + this.product;
+  }
+
+  get isInStock():boolean {
+    if(this.activeVariant !== null) {
+      return !!this.activeVariant.inventory;
+    }
+    return false;
   }
 
 }
