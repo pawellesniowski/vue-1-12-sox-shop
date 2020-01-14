@@ -1,64 +1,109 @@
 <template>
   <div class="product-page__container">
     <div class="product-page__leftcol">
-      {{soxColor}}
-      <img :src="soxImage">
+      {{activeVariant.color}}
+      <img :src="activeVariant.image">
     </div>
     <div class="product-page__rightcol">
       <h1>{{title}}</h1>
       <span>Shipping: 24 hours</span>
-      <span>Stock: {{inventory > 0 ? "available" : "out of stock"}}</span>
+      <span :style="[activeVariant.inventory <= 0 ? {color: 'red'} : {color: 'green'}]">
+        Stock: {{activeVariant.inventory}}
+      </span>
       <h2>Details</h2>
-      <ul v-for="detail in details" v-bind:key="detail.id">
-        <li>{{detail.material}}</li>
+      <ul>
+        <li v-for="detail in activeVariant.details" v-bind:key="detail.id">{{detail.description}}</li>
       </ul>
       <h2>Colors:</h2>
-      <ul v-for="color in colors" v-bind:key="color">
-        <li v-on:click="setSoxColor(color)">{{color}}</li>
-      </ul>
-      <button v-on:click="handleAddToCart">Add to Cart</button>
+      <div
+        v-for="(variant, index) in productVariants"
+        :key="variant.id"
+        class="variant-box"
+        :style="{backgroundColor: variant.color}"
+        v-on:click="setActiveVariant(index)"
+      >
+      </div>
+      <button
+        v-on:click="handleAddToCart"
+        :disabled="activeVariant.inventory <=0"
+      >Add to Cart
+      </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-  import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 
-  interface materialDetails {
-    id: number;
-    material: string;
+interface MaterialDetails {
+  id: number;
+  description: string;
+}
+
+interface ProductVariant {
+  id: number;
+  color: string;
+  image: string;
+  inventory: number;
+  details: MaterialDetails[];
+}
+
+Component.registerHooks([
+  'created',
+]);
+
+@Component
+export default class ProductPage extends Vue {
+  @Prop() handleItemsToCart!: () => void;
+
+
+  brand: string = "Vue Mastery";
+  product: string = "Sox";
+  inventory: number = 5;
+  activeVariant: ProductVariant | null = null;
+  productVariants: ProductVariant[] = [
+    {
+      id: 234,
+      color: "Green",
+      image: "",
+      inventory: 10,
+      details: [
+        {id: 1, description: "80% cotton"},
+        {id: 2, description: "20% polyester"},
+        {id: 3, description: "gender neutral"}
+      ]
+    },
+    {
+      id: 456,
+      color: "Blue",
+      image: "",
+      inventory: 5,
+      details: [
+        {id: 1, description: "99% cotton"},
+        {id: 2, description: "1% polyester"},
+        {id: 3, description: "gender neutral"}
+      ]
+    }
+  ];
+
+  created() {
+    this.setActiveVariant(0);
   }
 
-  @Component
-  export default class ProductPage extends Vue {
-    @Prop() handleItemsToCart: any;
-
-    title: string = "Vue Mastery Socks";
-    soxImage: string = "../assets/vmSocks-green-onWhite.jpg";
-    inventory: number = 5;
-    details: materialDetails[] = [
-      {id: 1, material: "80% cotton"},
-      {id: 2, material: "20% polyester"},
-      {id: 3, material: "gender neutral"}
-    ];
-    colors: string[] = ["Green", "Blue"];
-    soxColor: string = this.colors[0];
-
-    handleAddToCart () {
-      if(this.inventory > 0) {
-        this.inventory--;
-        this.handleItemsToCart();
-      } else {
-        alert('Product out of the stock')
-      }
-    }
-
-    setSoxColor(color: string) {
-      this.soxColor = color;
-      console.log('sox color: ', this.soxColor);
-    }
-
+  setActiveVariant(index: number = 0): void {
+    this.activeVariant = this.productVariants[index];
   }
+
+  handleAddToCart() {
+    this.activeVariant!.inventory--;
+    this.handleItemsToCart();
+  }
+
+  get title() {
+    return this.brand + " " + this.product;
+  }
+
+}
 
 </script>
 
@@ -68,10 +113,23 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
+
 .product-page__rightcol {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+}
+
+.variant-box {
+  width: 50px;
+  height: 50px;
+  margin-top: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.variant-box:last-of-type {
+  margin-bottom: 30px;
 }
 
 </style>

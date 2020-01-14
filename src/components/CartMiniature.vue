@@ -12,11 +12,11 @@ export default class CartMiniature extends Vue {
   @Prop({default: 0}) cartItemsNumber!: number;
 }
 
-
 </script>
 
 <style>
   .cart-miniature {
+    float: right;
     width: 70px;
     height: 50px;
     background-color: #2c3e50;
