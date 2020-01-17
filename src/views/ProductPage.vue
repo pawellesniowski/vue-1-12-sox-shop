@@ -1,8 +1,10 @@
 <template>
   <div class="product-page__container">
     <div class="product-page__leftcol">
-      {{activeVariant.color}}
-      <img :src="activeVariant.image">
+      <img
+        class="product-page__product-image"
+        :src="activeVariant.image"
+      >
     </div>
     <div class="product-page__rightcol">
       <h1>{{title}}</h1>
@@ -14,6 +16,7 @@
       <ul>
         <li v-for="detail in activeVariant.details" v-bind:key="detail.id">{{detail.description}}</li>
       </ul>
+      <div class="product-page__color-option"></div>
       <h2>Colors:</h2>
       <div
         v-for="(variant, index) in productVariants"
@@ -24,16 +27,26 @@
       >
       </div>
       <button
-        v-on:click="handleAddToCart"
+        v-on:click="handleAddToCart(activeVariant.id)"
         :disabled="!isInStock"
       >Add to Cart
       </button>
+      <button
+        v-on:click="handleRemoveFromCart(activeVariant.id)"
+      >Remove from cart
+      </button>
+
+      <h2>Add product review</h2>
+      <ProductReview />
+
     </div>
+
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
+import ProductReview from "@/components/ProductReview.vue";
 
 interface MaterialDetails {
   id: number;
@@ -51,11 +64,10 @@ interface ProductVariant {
 Component.registerHooks([
   'created',
 ]);
-
-@Component
+@Component({
+  components: {ProductReview}
+})
 export default class ProductPage extends Vue {
-  @Prop() handleItemsToCart!: () => void;
-
   brand: string = "Vue Mastery";
   product: string = "Sox";
   activeVariant: ProductVariant | null = null;
@@ -63,7 +75,7 @@ export default class ProductPage extends Vue {
     {
       id: 234,
       color: "Green",
-      image: "",
+      image: "./images/green.jpg",
       inventory: 10,
       details: [
         {id: 1, description: "80% cotton"},
@@ -74,7 +86,7 @@ export default class ProductPage extends Vue {
     {
       id: 456,
       color: "Blue",
-      image: "",
+      image: "./images/blue.jpg",
       inventory: 5,
       details: [
         {id: 1, description: "99% cotton"},
@@ -92,23 +104,29 @@ export default class ProductPage extends Vue {
     this.activeVariant = this.productVariants[index];
   }
 
-  handleAddToCart() {
-    if(this.activeVariant!.inventory > 0) {
+  handleAddToCart(id: number): void {
+    if (this.activeVariant!.inventory > 0) {
       this.activeVariant!.inventory--;
-      this.handleItemsToCart();
+      this.$emit('add-to-cart', id);
     }
+  }
+
+  handleRemoveFromCart(id: number): void {
+    this.activeVariant!.inventory++;
+    this.$emit('remove-from-cart', id);
   }
 
   get title(): string {
     return this.brand + " " + this.product;
   }
 
-  get isInStock():boolean {
-    if(this.activeVariant !== null) {
+  get isInStock(): boolean {
+    if (this.activeVariant !== null) {
       return !!this.activeVariant.inventory;
     }
     return false;
   }
+
 
 }
 
@@ -116,9 +134,21 @@ export default class ProductPage extends Vue {
 
 <style lang="scss" scoped>
 
+
 .product-page__container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+.product-page__leftcol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.product-page__product-image {
+  max-width: 500px;
 }
 
 .product-page__rightcol {
@@ -137,6 +167,10 @@ export default class ProductPage extends Vue {
 
 .variant-box:last-of-type {
   margin-bottom: 30px;
+}
+
+button {
+  margin-bottom:20px;
 }
 
 </style>

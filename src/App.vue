@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <CartMiniature :cartItemsNumber="cartItemsNumber"/>
-    <ProductPage :handleItemsToCart="handleItemsToCart"/>
+    <CartMiniature :cartItemsNumber="cartItems.length"/>
+    <ProductPage @add-to-cart="addToCart" @remove-from-cart="removeFromCart"/>
     <AppFooter/>
   </div>
 </template>
@@ -20,9 +20,13 @@ import CartMiniature from './components/CartMiniature.vue';
   },
 })
 export default class App extends Vue {
-  cartItemsNumber: number = 0;
-  handleItemsToCart () {
-    this.cartItemsNumber++;
+  cartItems: number[] = [];
+  addToCart (id: number): void {
+    this.cartItems.push(id);
+  }
+  removeFromCart (id: number) {
+    const indexIdToRemove = this.cartItems.indexOf(id);
+    this.cartItems = this.cartItems.filter((item, index) => index !== indexIdToRemove);
   }
 }
 </script>
